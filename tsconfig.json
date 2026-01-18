@@ -30,6 +30,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "global.d.ts"
-  ],
+, "src/inngest/functios.ts"  ],
   "exclude": ["node_modules"]
 }
