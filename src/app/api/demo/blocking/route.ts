@@ -10,6 +10,11 @@ export async function POST() {
     model: google("gemini-3-flash-preview"),
     prompt:
       "Write a veg spaghetti recipie with a bit of Indian Spice taste to it (Make Sure it's fully creammy and chessy). For 4 People",
+    experimental_telemetry: {
+      isEnabled: true,
+      recordInputs: true,
+      recordOutputs: true,
+    },
   });
 
   return Response.json({ response });
