@@ -44,7 +44,7 @@ interface ProjectsListProps {
 const ContinueCard = ({ data }: { data: Doc<"projects"> }) => {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-xs text-muted-foreground">Resume</span>
+      <span className="text-xs text-muted-foregro und">Resume</span>
       <Button
         variant="outline"
         asChild
