@@ -33,7 +33,7 @@ const font = Poppins({
 
 export const Navbar = ({ projectId }: { projectId: Id<"projects"> }) => {
   const project = useProject(projectId);
-  const renameProject = useRenameProject(projectId);
+  const renameProject = useRenameProject();
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [name, setName] = useState("");
@@ -44,20 +44,29 @@ export const Navbar = ({ projectId }: { projectId: Id<"projects"> }) => {
     setIsRenaming(true);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!project) return;
     setIsRenaming(false);
 
     const trimmedName = name.trim();
     if (trimmedName.length === 0 || trimmedName === project?.name) return;
 
-    renameProject({ id: projectId, name: trimmedName });
+    try {
+      await renameProject({ id: projectId, name: trimmedName });
+      toast.promise(renameProject({ id: projectId, name: trimmedName }), {
+        loading: "Renaming project...",
+        success: "Project renamed 🎉",
+        error: "Failed to rename project",
+      });
+    } catch (error) {
+      toast.error("Failed to rename project");
+      console.log(error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSubmit();
-      toast.success("Project renamed successfully");
     } else if (e.key === "Escape") {
       setIsRenaming(false);
     }
