@@ -42,7 +42,7 @@ export const TreeItemWrapper = ({
           onClick={onClick}
           onDoubleClick={onDoubleClick}
           onKeyDown={(e) => {
-            if (e.key === "Emter") {
+            if (e.key === "Enter") {
               e.preventDefault();
               onRename?.();
             }
@@ -59,7 +59,7 @@ export const TreeItemWrapper = ({
         </button>
       </ContextMenuTrigger>
       <ContextMenuContent
-        onCloseAutoFocus={(e) => e.preventDefault}
+        onCloseAutoFocus={(e) => e.preventDefault()}
         className="w-64"
       >
         {item.type === "folder" && (
