@@ -52,7 +52,6 @@ export const Navbar = ({ projectId }: { projectId: Id<"projects"> }) => {
     if (trimmedName.length === 0 || trimmedName === project?.name) return;
 
     try {
-      await renameProject({ id: projectId, name: trimmedName });
       toast.promise(renameProject({ id: projectId, name: trimmedName }), {
         loading: "Renaming project...",
         success: "Project renamed 🎉",
