@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       .replace("{previousLines}", previousLines || "")
       .replace("{textBeforeCursor}", textBeforeCursor)
       .replace("{textAfterCursor}", textAfterCursor)
-      .replace("'{nextLines}", nextLines || "")
+      .replace("{nextLines}", nextLines || "")
       .replace("{lineNumber}", lineNumber.toString());
 
     const { output } = await generateText({
