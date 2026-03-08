@@ -41,7 +41,7 @@ export const CodeEditor = ({
         customTheme,
         customSetup,
         languageExtension,
-        // suggestion(fileName),
+        suggestion(fileName),
         quickEdit(fileName),
         selectionTooltip(),
         keymap.of([indentWithTab]),
