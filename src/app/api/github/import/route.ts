@@ -8,77 +8,100 @@ import { inngest } from "@/inngest/client";
 import { api } from "../../../../../convex/_generated/api";
 
 const requestSchema = z.object({
-  url: z.url(),
+  url: z.string().url(),
 });
 
 function parseGitHubUrl(url: string) {
-  const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
+  const match = url.match(/github\.com\/([^/]+)\/([^/]+)/i);
+
   if (!match) {
     throw new Error("Invalid GitHub URL");
   }
 
-  return { owner: match[1], repo: match[2].replace(/\.git$/, "") };
+  const owner = match[1];
+  const repo = match[2].replace(".git", "").replace(/\/$/, "");
+
+  return { owner, repo };
 }
 
 export async function POST(request: Request) {
-  const { userId, has } = await auth();
+  try {
+    const { userId, has } = await auth();
 
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  const hasPro = has({ plan: "pro" });
+    const hasPro = has({ plan: "pro" });
 
-  if (!hasPro) {
-    return NextResponse.json({ error: "Pro plan required" }, { status: 403 });
-  }
+    if (!hasPro) {
+      return NextResponse.json({ error: "Pro plan required" }, { status: 403 });
+    }
 
-  const body = await request.json();
-  const { url } = requestSchema.parse(body);
+    const body = await request.json();
+    const { url } = requestSchema.parse(body);
 
-  const { owner, repo } = parseGitHubUrl(url);
-  // https://github.com/NityamSuchak/cursor-dev
-  // { owner: "NityamSuchak", repo: "cursor-dev" }
+    const { owner, repo } = parseGitHubUrl(url);
 
-  const client = await clerkClient();
-  const tokens = await client.users.getUserOauthAccessToken(userId, "github");
-  const githubToken = tokens.data[0]?.token;
+    // Clerk GitHub OAuth token
+    const client = await clerkClient();
 
-  if (!githubToken) {
+    const tokens = await client.users.getUserOauthAccessToken(userId, "github");
+
+    const githubToken = tokens.data?.[0]?.token;
+
+    if (!githubToken) {
+      return NextResponse.json(
+        {
+          error: "GitHub not connected. Please reconnect your GitHub account.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const internalKey = process.env.CONVEX_INTERNAL_KEY;
+
+    if (!internalKey) {
+      console.error("CONVEX_INTERNAL_KEY missing");
+
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    // Create project in Convex
+    const projectId = await convex.mutation(api.system.createProject, {
+      internalKey,
+      name: repo,
+      ownerId: userId,
+    });
+
+    // Send import event to Inngest
+    const event = await inngest.send({
+      name: "github/import.repo",
+      data: {
+        owner,
+        repo,
+        projectId,
+        githubToken,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      projectId,
+      eventId: event.ids[0],
+    });
+  } catch (error) {
+    console.error("GitHub Import Error:", error);
+
     return NextResponse.json(
-      { error: "GitHub not connected. Please reconnect your GitHub account." },
-      { status: 400 }
-    );
-  }
-
-  const internalKey = process.env.POLARIS_CONVEX_INTERNAL_KEY;
-
-  if (!internalKey) {
-    return NextResponse.json(
-      { error: "Server configuration error" },
+      {
+        error: "Repository import failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
-
-  const projectId = await convex.mutation(api.system.createProject, {
-    internalKey,
-    name: repo,
-    ownerId: userId,
-  });
-
-  const event = await inngest.send({
-    name: "github/import.repo",
-    data: {
-      owner,
-      repo,
-      projectId,
-      githubToken,
-    },
-  });
-
-  return NextResponse.json({
-    success: true,
-    projectId,
-    eventId: event.ids[0],
-  });
 }
