@@ -4,6 +4,7 @@ import { DEFAULT_CONVERSATION_TITLE } from "../../../../convex/constants";
 import { CopyIcon, HistoryIcon, LoaderIcon, PlusIcon } from "lucide-react";
 import {
   Conversation,
+  ConversationEmptyState,
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
@@ -23,7 +24,7 @@ import {
   useMessages,
 } from "../hooks/use-conversations";
 import { useState } from "react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import {
   Message,
   MessageAction,
@@ -149,38 +150,46 @@ export const ConversationSidebar = ({
         </div>
         <Conversation className="flex-1">
           <ConversationContent>
-            {conversationMessages?.map((message, messageIndex) => (
-              <Message key={message._id} from={message.role}>
-                <MessageContent>
-                  {message.status === "processing" ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <LoaderIcon className="size-4 animate-spin" />
-                      <span>Thinking...</span>
-                    </div>
-                  ) : message.status === "cancelled" ? (
-                    <span className="text-muted-foreground italic">
-                      Request Cancelled
-                    </span>
-                  ) : (
-                    <MessageResponse>{message.content}</MessageResponse>
-                  )}
-                </MessageContent>
-                {message.role === "assistant" &&
-                  message.status === "completed" &&
-                  messageIndex === (conversationMessages?.length ?? 0) - 1 && (
-                    <MessageActions>
-                      <MessageAction
-                        onClick={() => {
-                          navigator.clipboard.writeText(message.content);
-                        }}
-                        label="Copy"
-                      >
-                        <CopyIcon className="size-3" />
-                      </MessageAction>
-                    </MessageActions>
-                  )}
-              </Message>
-            ))}
+            {conversationMessages && conversationMessages.length > 0 ? (
+              conversationMessages.map((message, messageIndex) => (
+                <Message key={message._id} from={message.role}>
+                  <MessageContent>
+                    {message.status === "processing" ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <LoaderIcon className="size-4 animate-spin" />
+                        <span>Thinking...</span>
+                      </div>
+                    ) : message.status === "cancelled" ? (
+                      <span className="text-muted-foreground italic">
+                        Request Cancelled
+                      </span>
+                    ) : (
+                      <MessageResponse>{message.content}</MessageResponse>
+                    )}
+                  </MessageContent>
+                  {message.role === "assistant" &&
+                    message.status === "completed" &&
+                    messageIndex ===
+                      (conversationMessages?.length ?? 0) - 1 && (
+                      <MessageActions>
+                        <MessageAction
+                          onClick={() => {
+                            navigator.clipboard.writeText(message.content);
+                          }}
+                          label="Copy"
+                        >
+                          <CopyIcon className="size-3" />
+                        </MessageAction>
+                      </MessageActions>
+                    )}
+                </Message>
+              ))
+            ) : (
+              <ConversationEmptyState
+                title="New conversation"
+                description="Ask Polaris anything about your project, files, or code."
+              />
+            )}
           </ConversationContent>
           <ConversationScrollButton />
         </Conversation>

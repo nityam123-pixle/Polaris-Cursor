@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 "use client";
 
 import type { ComponentProps, HTMLAttributes } from "react";

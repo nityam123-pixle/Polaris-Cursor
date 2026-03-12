@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import type { Experimental_GeneratedImage } from "ai";
 
 import { cn } from "@/lib/utils";

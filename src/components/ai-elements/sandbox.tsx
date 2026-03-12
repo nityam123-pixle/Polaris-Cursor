@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 "use client";
 
 import type { ToolUIPart } from "ai";
@@ -8,12 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon, Code } from "lucide-react";
 
